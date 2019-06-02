@@ -34,7 +34,7 @@ import java.util.logging.*;
  * @author Connor Tumbleson <connor.tumbleson@gmail.com>
  */
 public class Main {
-    public static void main(String[] args) throws IOException, InterruptedException, BrutException {
+    public static int main(String[] args) throws IOException, InterruptedException, BrutException {
 
         // headless
         System.setProperty("java.awt.headless", "true");
@@ -54,7 +54,7 @@ public class Main {
         } catch (ParseException ex) {
             System.err.println(ex.getMessage());
             usage();
-            return;
+            return 0;
         }
 
         // check for verbose / quiet
@@ -73,10 +73,14 @@ public class Main {
         boolean cmdFound = false;
         for (String opt : commandLine.getArgs()) {
             if (opt.equalsIgnoreCase("d") || opt.equalsIgnoreCase("decode")) {
-                cmdDecode(commandLine);
+                // if error occurs return this error
+                int returnValue = cmdDecode(commandLine);
+                if (returnValue != 0) return returnValue;
                 cmdFound = true;
             } else if (opt.equalsIgnoreCase("b") || opt.equalsIgnoreCase("build")) {
-                cmdBuild(commandLine);
+                // if error occurs return this error
+                int returnValue = cmdBuild(commandLine);
+                if (returnValue != 0) return returnValue;
                 cmdFound = true;
             } else if (opt.equalsIgnoreCase("if") || opt.equalsIgnoreCase("install-framework")) {
                 cmdInstallFramework(commandLine);
@@ -94,14 +98,14 @@ public class Main {
         if (!cmdFound) {
             if (commandLine.hasOption("version")) {
                 _version();
-                System.exit(0);
             } else {
                 usage();
             }
         }
+        return 0;
     }
 
-    private static void cmdDecode(CommandLine cli) throws AndrolibException {
+    private static int cmdDecode(CommandLine cli) throws AndrolibException {
         ApkDecoder decoder = new ApkDecoder();
 
         int paraCount = cli.getArgList().size();
@@ -114,7 +118,7 @@ public class Main {
         }
         if (cli.hasOption("d") || cli.hasOption("debug")) {
             System.err.println("SmaliDebugging has been removed in 2.1.0 onward. Please see: https://github.com/iBotPeaches/Apktool/issues/1061");
-            System.exit(1);
+            return 1;
         }
         if (cli.hasOption("b") || cli.hasOption("no-debug-info")) {
             decoder.setBaksmaliDebugMode(false);
@@ -171,31 +175,32 @@ public class Main {
                             + outDir.getAbsolutePath()
                             + ") "
                             + "already exists. Use -f switch if you want to overwrite it.");
-            System.exit(1);
+            return 1;
         } catch (InFileNotFoundException ex) {
             System.err.println("Input file (" + apkName + ") " + "was not found or was not readable.");
-            System.exit(1);
+            return 1;
         } catch (CantFindFrameworkResException ex) {
             System.err
                     .println("Can't find framework resources for package of id: "
                             + String.valueOf(ex.getPkgId())
                             + ". You must install proper "
                             + "framework files, see project website for more info.");
-            System.exit(1);
+            return 1;
         } catch (IOException ex) {
             System.err.println("Could not modify file. Please ensure you have permission.");
-            System.exit(1);
+            return 1;
         } catch (DirectoryException ex) {
             System.err.println("Could not modify internal dex files. Please ensure you have permission.");
-            System.exit(1);
+            return 1;
         } finally {
             try {
                 decoder.close();
             } catch (IOException ignored) {}
         }
+        return 0;
     }
 
-    private static void cmdBuild(CommandLine cli) throws BrutException {
+    private static int cmdBuild(CommandLine cli) throws BrutException {
         String[] args = cli.getArgs();
         String appDirName = args.length < 2 ? "." : args[1];
         File outFile;
@@ -238,6 +243,8 @@ public class Main {
         } else {
             outFile = null;
         }
+        
+        int returnValue = 0;
 
         // try and build apk
         try {
@@ -247,8 +254,9 @@ public class Main {
             new Androlib(apkOptions).build(new File(appDirName), outFile);
         } catch (BrutException ex) {
             System.err.println(ex.getMessage());
-            System.exit(1);
+            returnValue = 1;
         }
+        return returnValue;
     }
 
     private static void cmdInstallFramework(CommandLine cli) throws AndrolibException {
