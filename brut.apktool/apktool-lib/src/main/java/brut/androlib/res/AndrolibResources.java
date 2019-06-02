@@ -663,7 +663,7 @@ final public class AndrolibResources {
     public Duo<ResFileDecoder, AXmlResourceParser> getResFileDecoder() {
         ResStreamDecoderContainer decoders = new ResStreamDecoderContainer();
         decoders.setDecoder("raw", new ResRawStreamDecoder());
-        decoders.setDecoder("9patch", new Res9patchStreamDecoder());
+//        decoders.setDecoder("9patch", new Res9patchStreamDecoder()); // not supported in android
 
         AXmlResourceParser axmlParser = new AXmlResourceParser();
         axmlParser.setAttrDecoder(new ResAttrDecoder());

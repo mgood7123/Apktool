@@ -18,7 +18,8 @@ package brut.androlib.res.xml;
 
 import brut.util.Duo;
 
-import java.awt.event.KeyEvent;
+// awt is not supported on android
+// import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -215,7 +216,9 @@ public final class ResXmlEncoders {
 
     private static boolean isPrintableChar(char c) {
         Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
-        return !Character.isISOControl(c) && c != KeyEvent.CHAR_UNDEFINED
+        // KeyEvent.CHAR_UNDEFINED comes from java.awt.event.KeyEvent
+        // and is defined as '\uffff'
+        return !Character.isISOControl(c) && c != '\uffff'
                 && block != null && block != Character.UnicodeBlock.SPECIALS;
     }
 }

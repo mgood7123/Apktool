@@ -34,6 +34,14 @@ public class ResStreamDecoderContainer {
     }
 
     public ResStreamDecoder getDecoder(String name) throws AndrolibException {
+        // android cannot decode 9patch due to java.awt being
+        // unsupported, so throw an exception if attempted to
+        // decode
+         if (name.contentEquals("9patch")) {
+             throw new AndrolibException(
+                     "9patch is not yet supported by the decoder for Android, " +
+                             "consider using the desktop version of apktool instead");
+         }
         ResStreamDecoder decoder = mDecoders.get(name);
         if (decoder == null) {
             throw new AndrolibException("Undefined decoder: " + name);
