@@ -917,6 +917,14 @@ final public class AndrolibResources {
         if (apkOptions.frameworkFolderLocation != null) {
             path = apkOptions.frameworkFolderLocation;
         } else {
+            // user.home defaults to / on android
+            // thus this MUST be set to a writable location
+            // in android with
+            // System.setProperty("user.home", writablePath);
+            // before calling Main.main
+
+            // NOTE /data/local/tmp is NOT garenteed to be
+            // writable on recent android versions
             File parentPath = new File(System.getProperty("user.home"));
 
             if (OSDetection.isMacOSX()) {
